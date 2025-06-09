@@ -219,6 +219,8 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   end,
 })
 
+require 'custom.plugins'
+
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
@@ -349,6 +351,50 @@ require('lazy').setup({
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
       },
     },
+  },
+
+  -- Neovim file explorer: edit your filesystem like a buffer
+  {
+    'stevearc/oil.nvim',
+    dependencies = { 'echasnovski/mini.icons' },
+    lazy = false,
+    config = function()
+      require('oil').setup {
+        view_options = {
+          show_hidden = true,
+          is_tree = true,
+          use_indicator = true,
+        },
+        float = {
+          enter = true,
+          border = 'rounded',
+          padding = 2,
+          max_width = 0.8,
+          max_height = 0.8,
+        },
+      }
+
+      -- Go up one level
+      vim.keymap.set('n', '-', require('oil').open, {
+        desc = 'Oil: Open parent directory',
+      })
+
+      -- Open current file’s dir
+      vim.keymap.set('n', '<leader>o', function()
+        require('oil').open(vim.fn.expand '%:p:h')
+      end, { desc = 'Oil: Open current file’s directory' })
+
+      -- Toggle a side-split Oil pane
+      vim.keymap.set('n', '<leader>e', function()
+        for _, win in ipairs(vim.api.nvim_list_wins()) do
+          if vim.api.nvim_buf_get_option(vim.api.nvim_win_get_buf(win), 'filetype') == 'oil' then
+            return vim.api.nvim_win_close(win, false)
+          end
+        end
+        vim.cmd 'leftabove vertical split'
+        require('oil').open()
+      end, { desc = 'Oil: Toggle in left split' })
+    end,
   },
 
   -- NOTE: Plugins can specify dependencies.
@@ -667,12 +713,12 @@ require('lazy').setup({
       --  Add any additional override configuration in the following tables. Available keys are:
       --  - cmd (table): Override the default command used to start the server
       --  - filetypes (table): Override the default list of associated filetypes for the server
-      --  - capabilities (table): Override fields in capabilities. Can be used to disable certain LSP features.
+      --  - capabilities (table): Override fields/ in capabilities. Can be used to disable certain LSP features.
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
         -- clangd = {},
-        -- gopls = {},
+        gopls = {},
         -- pyright = {},
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
@@ -975,7 +1021,7 @@ require('lazy').setup({
   --
   -- require 'kickstart.plugins.debug',
   -- require 'kickstart.plugins.indent_line',
-  -- require 'kickstart.plugins.lint',
+  require 'kickstart.plugins.lint',
   -- require 'kickstart.plugins.autopairs',
   -- require 'kickstart.plugins.neo-tree',
   -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
