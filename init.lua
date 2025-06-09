@@ -782,6 +782,26 @@ require('lazy').setup({
     end,
   },
 
+  -- Go dev experience
+  {
+    'ray-x/go.nvim',
+    ft = 'go',
+    dependencies = {
+      'ray-x/guihua.lua', -- a small UI library
+      'neovim/nvim-lspconfig', -- ensure LSP is available
+    },
+    config = function()
+      require('go').setup {
+        goimport = 'goimports', -- use goimports on save
+        fillstruct = 'gopls', -- use gopls for struct stubs
+        lsp_cfg = false, -- we’ll use mason-lspconfig instead
+        gopls_remote_auto = true, -- auto-update gopls via go install
+        dap = true, -- enable nvim-dap integration
+        test_runner = 'rich', -- colorful test results
+      }
+    end,
+  },
+
   { -- Autoformat
     'stevearc/conform.nvim',
     event = { 'BufWritePre' },
@@ -814,11 +834,12 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
+        javascript = { 'prettierd', 'prettier', stop_after_first = true },
+        go = { 'goimports', 'gofmt' },
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
-        -- javascript = { "prettierd", "prettier", stop_after_first = true },
       },
     },
   },
@@ -990,7 +1011,25 @@ require('lazy').setup({
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
+      ensure_installed = {
+        'bash',
+        'c',
+        'diff',
+        'html',
+        'lua',
+        'luadoc',
+        'markdown',
+        'markdown_inline',
+        'query',
+        'vim',
+        'vimdoc',
+        -- Golang
+        'go',
+        'gomod',
+        'gowork',
+        'gosum',
+        -- Golang
+      },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
