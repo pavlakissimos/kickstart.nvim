@@ -91,7 +91,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.o`
@@ -564,6 +564,31 @@ require('lazy').setup({
       -- If you're wondering about lsp vs treesitter, you can check out the wonderfully
       -- and elegantly composed help section, `:help lsp-vs-treesitter`
 
+      local util = require 'lspconfig.util'
+
+      -- 1) Setup Mason
+      local mason = require 'mason'
+      mason.setup()
+
+      -- 2) Setup mason-lspconfig with ts_ls instead of tsserver
+      local mlsp = require 'mason-lspconfig'
+      mlsp.setup {
+        ensure_installed = { 'ts_ls' }, -- <- use ts_ls here
+      }
+
+      -- 3) Merge in completion capabilities
+      local caps = vim.tbl_deep_extend('force', vim.lsp.protocol.make_client_capabilities(), require('blink.cmp').get_lsp_capabilities())
+
+      -- 4) Configure the ts_ls server
+      require('lspconfig').ts_ls.setup {
+        capabilities = caps,
+        root_dir = util.root_pattern('package.json', 'tsconfig.json', '.git'),
+        on_attach = function(client)
+          -- disable the built-in formatter so Prettier handles formatting
+          client.server_capabilities.documentFormattingProvider = false
+        end,
+      }
+
       --  This function gets run when an LSP attaches to a particular buffer.
       --    That is to say, every time a new file is opened that is associated with
       --    an lsp (for example, opening `main.rs` is associated with `rust_analyzer`) this
@@ -834,14 +859,52 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
-        javascript = { 'prettierd', 'prettier', stop_after_first = true },
         go = { 'goimports', 'gofmt' },
+        javascript = { 'prettier', stop_after_first = true },
+        javascriptreact = { 'prettier', stop_after_first = true },
+        typescript = { 'prettier', stop_after_first = true },
+        typescriptreact = { 'prettier', stop_after_first = true },
+        html = { 'prettier', stop_after_first = true },
+        css = { 'prettier', stop_after_first = true },
+        json = { 'prettier', stop_after_first = true },
+        yaml = { 'prettier', stop_after_first = true },
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
       },
     },
+  },
+
+  {
+    'nvimtools/none-ls.nvim',
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+      'nvimtools/none-ls-extras.nvim',
+    },
+    config = function()
+      local null_ls = require 'null-ls'
+      null_ls.setup {
+        sources = {
+          -- pull from the extras plugin, not the built-in table
+          require 'none-ls.diagnostics.eslint_d',
+          require 'none-ls.code_actions.eslint_d',
+        },
+        on_attach = function(client, bufnr)
+          if client.supports_method 'textDocument/codeAction' then
+            vim.api.nvim_create_autocmd('BufWritePost', {
+              buffer = bufnr,
+              callback = function()
+                vim.lsp.buf.code_action {
+                  only = { 'source.fixAll.eslint' },
+                  apply = true,
+                }
+              end,
+            })
+          end
+        end,
+      }
+    end,
   },
 
   { -- Autocompletion
@@ -1029,6 +1092,16 @@ require('lazy').setup({
         'gowork',
         'gosum',
         -- Golang
+
+        -- JS
+        'javascript',
+        'typescript',
+        'tsx',
+        'json',
+        'yaml',
+        'css',
+        'html',
+        -- JS
       },
       -- Autoinstall languages that are not installed
       auto_install = true,
