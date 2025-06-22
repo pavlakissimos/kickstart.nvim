@@ -221,6 +221,21 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 
 require 'custom.plugins'
 
+-- Show diagnostics in a float for the current line
+vim.keymap.set('n', '<leader>ie', vim.diagnostic.open_float, {
+  desc = 'Show line diagnostics',
+})
+
+-- Close all other buffers
+vim.keymap.set('n', '<leader>bo', function()
+  local curr = vim.api.nvim_get_current_buf()
+  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.api.nvim_buf_is_loaded(buf) and buf ~= curr then
+      vim.api.nvim_buf_delete(buf, { force = false })
+    end
+  end
+end, { desc = 'Close all other buffers' })
+
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
@@ -759,7 +774,7 @@ require('lazy').setup({
         -- clangd = {},
         gopls = {},
         -- pyright = {},
-        -- rust_analyzer = {},
+        rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
