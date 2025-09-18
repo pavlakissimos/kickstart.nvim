@@ -236,6 +236,24 @@ vim.keymap.set('n', '<leader>bo', function()
   end
 end, { desc = 'Close all other buffers' })
 
+-- Create new empty json buffer
+vim.keymap.set('n', '<leader>sjson', function()
+  vim.cmd 'enew' -- new empty buffer
+  vim.bo.filetype = 'json' -- set json filetype
+  vim.bo.buftype = 'nofile' -- no file backing
+  vim.bo.bufhidden = 'wipe' -- wipe when abandoned
+  vim.bo.swapfile = false -- no swapfile
+end, { desc = 'New temp JSON buffer' })
+
+-- Create new empty js buffer
+vim.keymap.set('n', '<leader>sjs', function()
+  vim.cmd 'enew' -- new empty buffer
+  vim.bo.filetype = 'js' -- set json filetype
+  vim.bo.buftype = 'nofile' -- no file backing
+  vim.bo.bufhidden = 'wipe' -- wipe when abandoned
+  vim.bo.swapfile = false -- no swapfile
+end, { desc = 'New temp JSON buffer' })
+
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
@@ -426,6 +444,14 @@ require('lazy').setup({
     end,
   },
 
+  -- Hardtime - Break bad habits, master Vim motions
+  {
+    'm4xshen/hardtime.nvim',
+    lazy = false,
+    dependencies = { 'MunifTanjim/nui.nvim' },
+    opts = {},
+  },
+
   -- NOTE: Plugins can specify dependencies.
   --
   -- The dependencies are proper plugin specifications as well - anything
@@ -538,26 +564,26 @@ require('lazy').setup({
   },
 
   -- Supermaven Plugin
-    {
-      "supermaven-inc/supermaven-nvim",
-      config = function()
-        require("supermaven-nvim").setup({})
-      end,
-    },
+  {
+    'supermaven-inc/supermaven-nvim',
+    config = function()
+      require('supermaven-nvim').setup {}
+    end,
+  },
 
-    -- LSP Plugins
-    {
-      -- `lazydev` configures Lua LSP for your Neovim config, runtime and plugins
-      -- used for completion, annotations and signatures of Neovim apis
-      'folke/lazydev.nvim',
-      ft = 'lua',
-      opts = {
-        library = {
-          -- Load luvit types when the `vim.uv` word is found
-          { path = '${3rd}/luv/library', words = { 'vim%.uv' } },
-        },
+  -- LSP Plugins
+  {
+    -- `lazydev` configures Lua LSP for your Neovim config, runtime and plugins
+    -- used for completion, annotations and signatures of Neovim apis
+    'folke/lazydev.nvim',
+    ft = 'lua',
+    opts = {
+      library = {
+        -- Load luvit types when the `vim.uv` word is found
+        { path = '${3rd}/luv/library', words = { 'vim%.uv' } },
       },
     },
+  },
   {
     -- Main LSP Configuration
     'neovim/nvim-lspconfig',
@@ -824,6 +850,7 @@ require('lazy').setup({
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
+        'prettierd',
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
@@ -897,14 +924,15 @@ require('lazy').setup({
       formatters_by_ft = {
         lua = { 'stylua' },
         go = { 'goimports', 'gofmt' },
-        javascript = { 'prettier', stop_after_first = true },
-        javascriptreact = { 'prettier', stop_after_first = true },
-        typescript = { 'prettier', stop_after_first = true },
-        typescriptreact = { 'prettier', stop_after_first = true },
-        html = { 'prettier', stop_after_first = true },
-        css = { 'prettier', stop_after_first = true },
-        json = { 'prettier', stop_after_first = true },
-        yaml = { 'prettier', stop_after_first = true },
+        -- JS/TS
+        javascript = { 'prettierd', 'prettier' },
+        javascriptreact = { 'prettierd', 'prettier' },
+        typescript = { 'prettierd', 'prettier' },
+        typescriptreact = { 'prettierd', 'prettier' },
+        json = { 'prettierd', 'prettier' },
+        yaml = { 'prettierd', 'prettier' },
+        html = { 'prettierd', 'prettier' },
+        css = { 'prettierd', 'prettier' },
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
         --
